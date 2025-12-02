@@ -31,9 +31,18 @@ export default function Index() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [heroImage, setHeroImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const heroImageInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRefs = useRef<{ [key: number]: HTMLInputElement }>({});
   const { toast } = useToast();
+
+  useEffect(() => {
+    const savedHeroImage = localStorage.getItem('heroImage');
+    if (savedHeroImage) {
+      setHeroImage(savedHeroImage);
+    }
+  }, []);
 
   useEffect(() => {
     loadProjects();
@@ -151,6 +160,28 @@ export default function Index() {
     }
   };
 
+  const handleHeroImageUpload = async (file: File) => {
+    try {
+      setUploading(true);
+      const imageUrl = await uploadImage(file);
+      setHeroImage(imageUrl);
+      localStorage.setItem('heroImage', imageUrl);
+      
+      toast({
+        title: 'Успешно',
+        description: 'Фото Алисы загружено',
+      });
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось загрузить фото',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const filteredProjects = projects.filter(project =>
     project.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -181,15 +212,62 @@ export default function Index() {
         }}
       />
       
-      <section className="py-24 px-6 bg-gradient-to-b from-muted/30 to-background">
-        <div className="max-w-4xl mx-auto text-center animate-fade-in">
-          <h1 className="text-6xl md:text-7xl font-serif mb-6 text-foreground tracking-tight">
-            Алиса Меликова
-          </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-2xl mx-auto">
-            Российский художник, живущая и работающая в Москве. Активно сотрудничает с ведущими режиссерами. 
-            Работы как в театральных постановках, так и в кинематографе.
-          </p>
+      <input
+        type="file"
+        ref={heroImageInputRef}
+        className="hidden"
+        accept="image/*"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            handleHeroImageUpload(file);
+          }
+        }}
+      />
+      
+      <section className="py-24 px-6 bg-gradient-to-b from-muted/30 to-background relative">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center gap-12 animate-fade-in">
+            <div className="flex-shrink-0">
+              <div className="relative w-64 h-64 rounded-full overflow-hidden bg-muted shadow-2xl group">
+                {heroImage ? (
+                  <img 
+                    src={heroImage} 
+                    alt="Алиса Меликова"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Icon name="User" size={80} className="text-muted-foreground" />
+                  </div>
+                )}
+                <button
+                  onClick={() => heroImageInputRef.current?.click()}
+                  disabled={uploading}
+                  className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"
+                >
+                  {uploading ? (
+                    <Icon name="Loader2" size={32} className="text-white animate-spin" />
+                  ) : (
+                    <div className="text-center text-white">
+                      <Icon name="Camera" size={32} className="mx-auto mb-2" />
+                      <p className="text-sm font-medium">Загрузить фото</p>
+                    </div>
+                  )}
+                </button>
+              </div>
+            </div>
+            
+            <div className="flex-1 text-center md:text-left">
+              <h1 className="text-6xl md:text-7xl font-serif mb-6 text-foreground tracking-tight">
+                Алиса Меликова
+              </h1>
+              <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">
+                Российский художник, живущая и работающая в Москве. Активно сотрудничает с ведущими режиссерами. 
+                Работы как в театральных постановках, так и в кинематографе.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
