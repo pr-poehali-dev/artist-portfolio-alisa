@@ -1,0 +1,39 @@
+{
+  "tests": [
+    {
+      "name": "Get all projects",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "0": {
+          "id": "string",
+          "title": "string",
+          "description": "string",
+          "coverImage": "string",
+          "images": "array"
+        }
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get single project by ID",
+      "method": "GET",
+      "path": "/?project_id=1",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "id": "number",
+        "title": "string",
+        "description": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Search projects",
+      "method": "GET",
+      "path": "/?search=розовое",
+      "expectedStatus": 200,
+      "bodyMatcher": "partial"
+    }
+  ]
+}
